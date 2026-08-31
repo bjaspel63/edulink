@@ -1,4 +1,4 @@
-id,name,url,subject,description,tags,screenshot
+id,name,url,applicable_subjects,description,tags,screenshot
 1,Scratch,https://scratch.mit.edu,ICT,"Create games, stories, and animations.","coding,games,programming",
 2,Canva,https://www.canva.com,ICT,"Create posters, presentations, graphics, and classroom materials.","design,graphics,presentations",
 3,Tinkercad,https://www.tinkercad.com,ICT,"Create 3D models and explore electronics and circuits.","3d,design,electronics",
