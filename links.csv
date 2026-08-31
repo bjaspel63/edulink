@@ -1,6 +1,6 @@
 id,name,url,subject,description,tags,screenshot
-1,Scratch,https://scratch.mit.edu,Computer Science,"Create games, stories, and animations.","coding,games,programming",
-2,Canva,https://www.canva.com,Digital Design,"Create posters, presentations, graphics, and classroom materials.","design,graphics,presentations",
-3,Tinkercad,https://www.tinkercad.com,3D Design,"Create 3D models and explore electronics and circuits.","3d,design,electronics",
-4,Code.org,https://code.org,Computer Science,"Interactive computer science and programming activities.","coding,cs,education",
-5,BBC micro:bit,https://microbit.org,Physical Computing,"Programming and physical computing projects for learners.","microbit,hardware,programming",
+1,Scratch,https://scratch.mit.edu,ICT,"Create games, stories, and animations.","coding,games,programming",
+2,Canva,https://www.canva.com,ICT,English,"Create posters, presentations, graphics, and classroom materials.","design,graphics,presentations",
+3,Tinkercad,https://www.tinkercad.com,ICT,"Create 3D models and explore electronics and circuits.","3d,design,electronics",
+4,Code.org,https://code.org,ICT,"Interactive computer science and programming activities.","coding,cs,education",
+5,BBC micro:bit,https://microbit.org,ICT,"Programming and physical computing projects for learners.","microbit,hardware,programming",
