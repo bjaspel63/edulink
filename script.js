@@ -1,42 +1,82 @@
 
-
-/* =========================================
-   GLOBAL DATA
-========================================= */
-
 let links = [];
 
+let selectedSubjects = new Set();
+
 
 /* =========================================
-   DOM ELEMENTS
+   DOM
 ========================================= */
 
 const searchInput =
-    document.getElementById("searchInput");
+    document.getElementById(
+        "searchInput"
+    );
 
-const subjectFilter =
-    document.getElementById("subjectFilter");
+const subjectButton =
+    document.getElementById(
+        "subjectButton"
+    );
+
+const subjectButtonText =
+    document.getElementById(
+        "subjectButtonText"
+    );
+
+const subjectMenu =
+    document.getElementById(
+        "subjectMenu"
+    );
+
+const subjectSearch =
+    document.getElementById(
+        "subjectSearch"
+    );
+
+const subjectOptions =
+    document.getElementById(
+        "subjectOptions"
+    );
+
+const clearSubjects =
+    document.getElementById(
+        "clearSubjects"
+    );
 
 const sortSelect =
-    document.getElementById("sortSelect");
+    document.getElementById(
+        "sortSelect"
+    );
 
 const cardGrid =
-    document.getElementById("cardGrid");
+    document.getElementById(
+        "cardGrid"
+    );
 
 const emptyState =
-    document.getElementById("emptyState");
-
-const subjectPills =
-    document.getElementById("subjectPills");
+    document.getElementById(
+        "emptyState"
+    );
 
 const totalCount =
-    document.getElementById("totalCount");
+    document.getElementById(
+        "totalCount"
+    );
 
 const subjectCount =
-    document.getElementById("subjectCount");
+    document.getElementById(
+        "subjectCount"
+    );
 
 const resultsCount =
-    document.getElementById("resultsCount");
+    document.getElementById(
+        "resultsCount"
+    );
+
+const activeFilters =
+    document.getElementById(
+        "activeFilters"
+    );
 
 
 /* =========================================
@@ -48,60 +88,78 @@ async function loadCSV() {
     try {
 
         const response =
-            await fetch("links.csv");
+            await fetch(
+                "links.csv"
+            );
+
 
         if (!response.ok) {
 
             throw new Error(
-                "Could not load links.csv"
+                "links.csv could not be loaded."
             );
 
         }
 
+
         const text =
             await response.text();
+
 
         links =
             parseCSV(text);
 
+
         initialize();
+
 
     } catch (error) {
 
         console.error(error);
 
+
         cardGrid.innerHTML = `
-            <div style="
-                grid-column:1/-1;
-                background:white;
-                border:1px solid #e1e6ee;
-                border-radius:15px;
-                padding:30px;
-                text-align:center;
-            ">
+
+            <div
+                style="
+                    grid-column:1/-1;
+                    background:white;
+                    border:1px solid #e1e6ee;
+                    border-radius:15px;
+                    padding:35px;
+                    text-align:center;
+                "
+            >
 
                 <h3>
                     ⚠️ Unable to load links.csv
                 </h3>
 
-                <p style="
-                    margin-top:10px;
-                    color:#667085;
-                ">
+
+                <p
+                    style="
+                        margin-top:10px;
+                        color:#667085;
+                    "
+                >
                     Make sure links.csv is in the
                     same folder as index.html.
                 </p>
 
-                <p style="
-                    margin-top:8px;
-                    color:#667085;
-                    font-size:13px;
-                ">
+
+                <p
+                    style="
+                        margin-top:8px;
+                        color:#667085;
+                        font-size:13px;
+                    "
+                >
                     If you opened index.html directly,
-                    use a local web server instead.
+                    use a local web server.
                 </p>
 
             </div>
+
         `;
 
     }
@@ -117,9 +175,7 @@ function initialize() {
 
     updateStatistics();
 
-    createSubjectFilter();
-
-    createSubjectPills();
+    createSubjectOptions();
 
     renderCards();
 
@@ -154,7 +210,7 @@ function parseCSV(text) {
             text[i + 1];
 
 
-        /* Double quotation inside quoted text */
+        /* Quoted comma */
 
         if (
             char === '"' &&
@@ -169,7 +225,7 @@ function parseCSV(text) {
         }
 
 
-        /* Start/end quotation */
+        /* Open / close quote */
 
         else if (
             char === '"'
@@ -181,7 +237,7 @@ function parseCSV(text) {
         }
 
 
-        /* Column separator */
+        /* New column */
 
         else if (
             char === "," &&
@@ -214,6 +270,7 @@ function parseCSV(text) {
 
             }
 
+
             row.push(cell);
 
             rows.push(row);
@@ -234,11 +291,11 @@ function parseCSV(text) {
     }
 
 
-    /* Last cell */
+    /* Last row */
 
     if (
-        cell.length > 0 ||
-        row.length > 0
+        cell.length ||
+        row.length
     ) {
 
         row.push(cell);
@@ -248,14 +305,16 @@ function parseCSV(text) {
     }
 
 
-    if (rows.length < 2) {
+    if (
+        rows.length < 2
+    ) {
 
         return [];
 
     }
 
 
-    /* First row = headers */
+    /* Headers */
 
     const headers =
         rows[0].map(
@@ -266,7 +325,7 @@ function parseCSV(text) {
         );
 
 
-    /* Convert rows to objects */
+    /* Convert CSV rows */
 
     return rows
         .slice(1)
@@ -278,19 +337,23 @@ function parseCSV(text) {
         )
         .map(row => {
 
-            const object = {};
+            const item = {};
+
 
             headers.forEach(
                 (header, index) => {
 
-                    object[header] =
-                        (row[index] || "")
-                            .trim();
+                    item[header] =
+                        (
+                            row[index] ||
+                            ""
+                        ).trim();
 
                 }
             );
 
-            return object;
+
+            return item;
 
         });
 
@@ -298,31 +361,61 @@ function parseCSV(text) {
 
 
 /* =========================================
-   GET SUBJECTS
+   GET ALL SUBJECTS
 ========================================= */
 
 function getSubjects() {
 
+    const subjectSet =
+        new Set();
+
+
+    links.forEach(link => {
+
+        const subjects =
+            splitSubjects(
+                link.applicable_subjects
+            );
+
+
+        subjects.forEach(
+            subject =>
+                subjectSet.add(subject)
+        );
+
+    });
+
+
     return [
-
-        ...new Set(
-
-            links
-
-                .map(
-                    link =>
-                        link.subject
-                            ?.trim()
-                )
-
-                .filter(Boolean)
-
-        )
-
+        ...subjectSet
     ].sort(
         (a, b) =>
             a.localeCompare(b)
     );
+
+}
+
+
+/* =========================================
+   SPLIT MULTIPLE SUBJECTS
+========================================= */
+
+function splitSubjects(value) {
+
+    if (!value) {
+
+        return [];
+
+    }
+
+
+    return value
+        .split(",")
+        .map(
+            subject =>
+                subject.trim()
+        )
+        .filter(Boolean);
 
 }
 
@@ -333,143 +426,313 @@ function getSubjects() {
 
 function updateStatistics() {
 
-    const subjects =
-        getSubjects();
-
-
     totalCount.textContent =
         links.length;
 
 
     subjectCount.textContent =
-        subjects.length;
+        getSubjects().length;
 
 }
 
 
 /* =========================================
-   SUBJECT FILTER
+   CREATE SUBJECT OPTIONS
 ========================================= */
 
-function createSubjectFilter() {
+function createSubjectOptions() {
 
     const subjects =
         getSubjects();
 
 
-    subjectFilter.innerHTML = `
-
-        <option value="">
-            All Subjects
-        </option>
-
-        ${
-            subjects
-                .map(subject => `
-                    <option
-                        value="${escapeHTML(subject)}"
-                    >
-                        ${escapeHTML(subject)}
-                    </option>
-                `)
-                .join("")
-        }
-
-    `;
-
-}
+    subjectOptions.innerHTML = "";
 
 
-/* =========================================
-   SUBJECT PILLS
-========================================= */
+    subjects.forEach(subject => {
 
-function createSubjectPills() {
-
-    const subjects =
-        getSubjects();
+        const label =
+            document.createElement(
+                "label"
+            );
 
 
-    subjectPills.innerHTML = `
-
-        <button
-            class="pill active"
-            data-subject=""
-        >
-            All
-        </button>
-
-        ${
-            subjects
-                .map(subject => `
-
-                    <button
-                        class="pill"
-                        data-subject="${escapeAttribute(subject)}"
-                    >
-                        ${escapeHTML(subject)}
-                    </button>
-
-                `)
-                .join("")
-        }
-
-    `;
+        label.className =
+            "subject-option";
 
 
-    document
-        .querySelectorAll(".pill")
-        .forEach(button => {
-
-            button.addEventListener(
-                "click",
-                function () {
-
-                    const subject =
-                        this.dataset.subject;
+        const checkbox =
+            document.createElement(
+                "input"
+            );
 
 
-                    subjectFilter.value =
-                        subject;
+        checkbox.type =
+            "checkbox";
 
 
-                    updateActivePill(
-                        subject
+        checkbox.value =
+            subject;
+
+
+        checkbox.checked =
+            selectedSubjects.has(
+                subject
+            );
+
+
+        checkbox.addEventListener(
+            "change",
+            function () {
+
+                if (this.checked) {
+
+                    selectedSubjects.add(
+                        this.value
                     );
 
+                } else {
 
-                    renderCards();
+                    selectedSubjects.delete(
+                        this.value
+                    );
 
                 }
+
+
+                updateSubjectButton();
+
+                updateActiveFilters();
+
+                renderCards();
+
+            }
+        );
+
+
+        const text =
+            document.createElement(
+                "span"
             );
 
-        });
+
+        text.textContent =
+            subject;
+
+
+        label.appendChild(
+            checkbox
+        );
+
+
+        label.appendChild(
+            text
+        );
+
+
+        subjectOptions.appendChild(
+            label
+        );
+
+    });
 
 }
 
 
 /* =========================================
-   ACTIVE PILL
+   SUBJECT BUTTON TEXT
 ========================================= */
 
-function updateActivePill(subject) {
+function updateSubjectButton() {
 
-    document
-        .querySelectorAll(".pill")
-        .forEach(button => {
+    const count =
+        selectedSubjects.size;
 
-            button.classList.toggle(
-                "active",
-                button.dataset.subject === subject
-            );
 
-        });
+    if (count === 0) {
+
+        subjectButtonText.textContent =
+            "Subjects";
+
+    }
+
+
+    else if (count === 1) {
+
+        subjectButtonText.textContent =
+            "1 Subject";
+
+    }
+
+
+    else {
+
+        subjectButtonText.textContent =
+            `${count} Subjects`;
+
+    }
 
 }
 
 
 /* =========================================
-   FILTER DATA
+   SUBJECT SEARCH
+========================================= */
+
+subjectSearch.addEventListener(
+    "input",
+    function () {
+
+        const query =
+            this.value
+                .trim()
+                .toLowerCase();
+
+
+        document
+            .querySelectorAll(
+                ".subject-option"
+            )
+            .forEach(option => {
+
+                const text =
+                    option.textContent
+                        .toLowerCase();
+
+
+                option.style.display =
+                    text.includes(query)
+                        ? "flex"
+                        : "none";
+
+            });
+
+    }
+);
+
+
+/* =========================================
+   OPEN / CLOSE SUBJECT MENU
+========================================= */
+
+subjectButton.addEventListener(
+    "click",
+    function (event) {
+
+        event.stopPropagation();
+
+        subjectMenu.classList.toggle(
+            "hidden"
+        );
+
+
+        if (
+            !subjectMenu.classList.contains(
+                "hidden"
+            )
+        ) {
+
+            subjectSearch.focus();
+
+        }
+
+    }
+);
+
+
+/* =========================================
+   CLICK OUTSIDE
+========================================= */
+
+document.addEventListener(
+    "click",
+    function (event) {
+
+        if (
+            !event.target.closest(
+                ".subject-dropdown"
+            )
+        ) {
+
+            subjectMenu.classList.add(
+                "hidden"
+            );
+
+        }
+
+    }
+);
+
+
+/* =========================================
+   CLEAR SUBJECTS
+========================================= */
+
+clearSubjects.addEventListener(
+    "click",
+    function () {
+
+        selectedSubjects.clear();
+
+
+        document
+            .querySelectorAll(
+                ".subject-option input"
+            )
+            .forEach(
+                checkbox =>
+                    checkbox.checked = false
+            );
+
+
+        updateSubjectButton();
+
+        updateActiveFilters();
+
+        renderCards();
+
+    }
+);
+
+
+/* =========================================
+   ACTIVE FILTER DISPLAY
+========================================= */
+
+function updateActiveFilters() {
+
+    activeFilters.innerHTML = "";
+
+
+    selectedSubjects.forEach(
+        subject => {
+
+            const filter =
+                document.createElement(
+                    "span"
+                );
+
+
+            filter.className =
+                "active-filter";
+
+
+            filter.textContent =
+                `✓ ${subject}`;
+
+
+            activeFilters.appendChild(
+                filter
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================
+   FILTER LINKS
 ========================================= */
 
 function getFilteredLinks() {
@@ -480,24 +743,24 @@ function getFilteredLinks() {
             .toLowerCase();
 
 
-    const subject =
-        subjectFilter.value;
-
-
     let filtered =
         links.filter(link => {
+
+            /* =========================
+               SEARCH
+            ========================= */
 
             const searchableText = `
 
                 ${link.name || ""}
 
-                ${link.subject || ""}
+                ${link.url || ""}
+
+                ${link.applicable_subjects || ""}
 
                 ${link.description || ""}
 
                 ${link.tags || ""}
-
-                ${link.url || ""}
 
             `.toLowerCase();
 
@@ -509,14 +772,35 @@ function getFilteredLinks() {
                 );
 
 
-            const matchesSubject =
-                !subject ||
-                link.subject === subject;
+            /* =========================
+               SUBJECT
+            ========================= */
+
+            const linkSubjects =
+                splitSubjects(
+                    link.applicable_subjects
+                );
+
+
+            /*
+                A website is shown if
+                it matches ANY selected
+                subject.
+            */
+
+            const matchesSubjects =
+                selectedSubjects.size === 0 ||
+                linkSubjects.some(
+                    subject =>
+                        selectedSubjects.has(
+                            subject
+                        )
+                );
 
 
             return (
                 matchesSearch &&
-                matchesSubject
+                matchesSubjects
             );
 
         });
@@ -530,13 +814,16 @@ function getFilteredLinks() {
         sortSelect.value;
 
 
-    if (sort === "name") {
+    if (
+        sort === "name"
+    ) {
 
         filtered.sort(
             (a, b) =>
-                a.name.localeCompare(
-                    b.name
-                )
+                (a.name || "")
+                    .localeCompare(
+                        b.name || ""
+                    )
         );
 
     }
@@ -548,9 +835,10 @@ function getFilteredLinks() {
 
         filtered.sort(
             (a, b) =>
-                b.name.localeCompare(
-                    a.name
-                )
+                (b.name || "")
+                    .localeCompare(
+                        a.name || ""
+                    )
         );
 
     }
@@ -563,23 +851,37 @@ function getFilteredLinks() {
         filtered.sort(
             (a, b) => {
 
-                const subjectCompare =
-                    a.subject.localeCompare(
-                        b.subject
+                const aSubject =
+                    splitSubjects(
+                        a.applicable_subjects
+                    )[0] || "";
+
+
+                const bSubject =
+                    splitSubjects(
+                        b.applicable_subjects
+                    )[0] || "";
+
+
+                const result =
+                    aSubject.localeCompare(
+                        bSubject
                     );
 
 
                 if (
-                    subjectCompare !== 0
+                    result !== 0
                 ) {
 
-                    return subjectCompare;
+                    return result;
 
                 }
 
 
-                return a.name.localeCompare(
-                    b.name
+                return (
+                    a.name || ""
+                ).localeCompare(
+                    b.name || ""
                 );
 
             }
@@ -614,7 +916,9 @@ function renderCards() {
         }`;
 
 
-    if (filtered.length === 0) {
+    if (
+        filtered.length === 0
+    ) {
 
         emptyState.classList.remove(
             "hidden"
@@ -630,13 +934,15 @@ function renderCards() {
     );
 
 
-    filtered.forEach(link => {
+    filtered.forEach(
+        link => {
 
-        cardGrid.appendChild(
-            createCard(link)
-        );
+            cardGrid.appendChild(
+                createCard(link)
+            );
 
-    });
+        }
+    );
 
 }
 
@@ -648,7 +954,9 @@ function renderCards() {
 function createCard(link) {
 
     const card =
-        document.createElement("article");
+        document.createElement(
+            "article"
+        );
 
 
     card.className =
@@ -656,21 +964,27 @@ function createCard(link) {
 
 
     /* =====================================
-       SCREENSHOT
+       IMAGE
     ===================================== */
 
     const imageContainer =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
 
 
     imageContainer.className =
         "card-image";
 
 
-    if (link.screenshot) {
+    if (
+        link.screenshot
+    ) {
 
         const image =
-            document.createElement("img");
+            document.createElement(
+                "img"
+            );
 
 
         image.src =
@@ -734,33 +1048,63 @@ function createCard(link) {
 
 
     /* =====================================
-       SUBJECT BADGE
+       SUBJECT BADGES
     ===================================== */
 
-    const badge =
-        document.createElement("span");
+    const badgeContainer =
+        document.createElement(
+            "div"
+        );
 
 
-    badge.className =
-        "subject-badge";
+    badgeContainer.className =
+        "subject-badges";
 
 
-    badge.textContent =
-        link.subject ||
-        "Uncategorized";
+    const subjects =
+        splitSubjects(
+            link.applicable_subjects
+        );
+
+
+    subjects.forEach(
+        subject => {
+
+            const badge =
+                document.createElement(
+                    "span"
+                );
+
+
+            badge.className =
+                "subject-badge";
+
+
+            badge.textContent =
+                subject;
+
+
+            badgeContainer.appendChild(
+                badge
+            );
+
+        }
+    );
 
 
     imageContainer.appendChild(
-        badge
+        badgeContainer
     );
 
 
     /* =====================================
-       CARD BODY
+       BODY
     ===================================== */
 
     const body =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
 
 
     body.className =
@@ -770,7 +1114,9 @@ function createCard(link) {
     /* TITLE */
 
     const titleRow =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
 
 
     titleRow.className =
@@ -778,7 +1124,9 @@ function createCard(link) {
 
 
     const title =
-        document.createElement("h3");
+        document.createElement(
+            "h3"
+        );
 
 
     title.textContent =
@@ -786,10 +1134,12 @@ function createCard(link) {
         "Untitled Website";
 
 
-    /* OPEN LINK */
+    /* OPEN */
 
     const openLink =
-        document.createElement("a");
+        document.createElement(
+            "a"
+        );
 
 
     openLink.className =
@@ -827,12 +1177,12 @@ function createCard(link) {
     );
 
 
-    /* =====================================
-       DESCRIPTION
-    ===================================== */
+    /* DESCRIPTION */
 
     const description =
-        document.createElement("p");
+        document.createElement(
+            "p"
+        );
 
 
     description.className =
@@ -849,51 +1199,50 @@ function createCard(link) {
     );
 
 
-    /* =====================================
-       TAGS
-    ===================================== */
+    /* TAGS */
 
     const tagsContainer =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
 
 
     tagsContainer.className =
         "tags";
 
 
-    if (link.tags) {
+    if (
+        link.tags
+    ) {
 
-        const tags =
-            link.tags
-                .split(",")
-                .map(
-                    tag =>
-                        tag.trim()
-                )
-                .filter(Boolean);
+        link.tags
+            .split(",")
+            .map(
+                tag =>
+                    tag.trim()
+            )
+            .filter(Boolean)
+            .forEach(tag => {
+
+                const tagElement =
+                    document.createElement(
+                        "span"
+                    );
 
 
-        tags.forEach(tag => {
+                tagElement.className =
+                    "tag";
 
-            const tagElement =
-                document.createElement(
-                    "span"
+
+                tagElement.textContent =
+                    `#${tag}`;
+
+
+                tagsContainer.appendChild(
+                    tagElement
                 );
 
-
-            tagElement.className =
-                "tag";
-
-
-            tagElement.textContent =
-                `#${tag}`;
-
-
-            tagsContainer.appendChild(
-                tagElement
-            );
-
-        });
+            });
 
     }
 
@@ -903,9 +1252,7 @@ function createCard(link) {
     );
 
 
-    /* =====================================
-       COMPLETE CARD
-    ===================================== */
+    /* COMPLETE CARD */
 
     card.appendChild(
         imageContainer
@@ -923,73 +1270,12 @@ function createCard(link) {
 
 
 /* =========================================
-   ESCAPE HTML
-========================================= */
-
-function escapeHTML(value) {
-
-    return String(value || "")
-        .replace(
-            /[&<>"']/g,
-            character => {
-
-                const entities = {
-
-                    "&": "&amp;",
-
-                    "<": "&lt;",
-
-                    ">": "&gt;",
-
-                    '"': "&quot;",
-
-                    "'": "&#039;"
-
-                };
-
-
-                return entities[
-                    character
-                ];
-
-            }
-        );
-
-}
-
-
-/* =========================================
-   ESCAPE ATTRIBUTE
-========================================= */
-
-function escapeAttribute(value) {
-
-    return escapeHTML(value);
-
-}
-
-
-/* =========================================
    EVENTS
 ========================================= */
 
 searchInput.addEventListener(
     "input",
     renderCards
-);
-
-
-subjectFilter.addEventListener(
-    "change",
-    function () {
-
-        updateActivePill(
-            this.value
-        );
-
-        renderCards();
-
-    }
 );
 
 
@@ -1000,7 +1286,7 @@ sortSelect.addEventListener(
 
 
 /* =========================================
-   START APPLICATION
+   START
 ========================================= */
 
 loadCSV();
