@@ -1,6 +1,5 @@
 
 let links = [];
-
 let selectedSubjects = new Set();
 
 
@@ -8,75 +7,20 @@ let selectedSubjects = new Set();
    DOM
 ========================================= */
 
-const searchInput =
-    document.getElementById(
-        "searchInput"
-    );
-
-const subjectButton =
-    document.getElementById(
-        "subjectButton"
-    );
-
-const subjectButtonText =
-    document.getElementById(
-        "subjectButtonText"
-    );
-
-const subjectMenu =
-    document.getElementById(
-        "subjectMenu"
-    );
-
-const subjectSearch =
-    document.getElementById(
-        "subjectSearch"
-    );
-
-const subjectOptions =
-    document.getElementById(
-        "subjectOptions"
-    );
-
-const clearSubjects =
-    document.getElementById(
-        "clearSubjects"
-    );
-
-const sortSelect =
-    document.getElementById(
-        "sortSelect"
-    );
-
-const cardGrid =
-    document.getElementById(
-        "cardGrid"
-    );
-
-const emptyState =
-    document.getElementById(
-        "emptyState"
-    );
-
-const totalCount =
-    document.getElementById(
-        "totalCount"
-    );
-
-const subjectCount =
-    document.getElementById(
-        "subjectCount"
-    );
-
-const resultsCount =
-    document.getElementById(
-        "resultsCount"
-    );
-
-const activeFilters =
-    document.getElementById(
-        "activeFilters"
-    );
+const searchInput = document.getElementById("searchInput");
+const subjectButton = document.getElementById("subjectButton");
+const subjectButtonText = document.getElementById("subjectButtonText");
+const subjectMenu = document.getElementById("subjectMenu");
+const subjectSearch = document.getElementById("subjectSearch");
+const subjectOptions = document.getElementById("subjectOptions");
+const clearSubjects = document.getElementById("clearSubjects");
+const sortSelect = document.getElementById("sortSelect");
+const cardGrid = document.getElementById("cardGrid");
+const emptyState = document.getElementById("emptyState");
+const totalCount = document.getElementById("totalCount");
+const subjectCount = document.getElementById("subjectCount");
+const resultsCount = document.getElementById("resultsCount");
+const activeFilters = document.getElementById("activeFilters");
 
 
 /* =========================================
@@ -87,80 +31,72 @@ async function loadCSV() {
 
     try {
 
-        const response =
-            await fetch(
-                "links.csv"
-            );
-
+        const response = await fetch("links.csv");
 
         if (!response.ok) {
-
-            throw new Error(
-                "links.csv could not be loaded."
-            );
-
+            throw new Error("links.csv could not be loaded.");
         }
 
+        const text = await response.text();
 
-        const text =
-            await response.text();
+        links = parseCSV(text);
 
+        console.log("Loaded websites:", links);
 
-        links =
-            parseCSV(text);
-
+        console.log(
+            "Detected subjects:",
+            getSubjects()
+        );
 
         initialize();
 
-
     } catch (error) {
 
-        console.error(error);
+        console.error("CSV ERROR:", error);
 
+        if (cardGrid) {
 
-        cardGrid.innerHTML = `
+            cardGrid.innerHTML = `
 
-            <div
-                style="
-                    grid-column:1/-1;
-                    background:white;
-                    border:1px solid #e1e6ee;
-                    border-radius:15px;
-                    padding:35px;
-                    text-align:center;
-                "
-            >
-
-                <h3>
-                    ⚠️ Unable to load links.csv
-                </h3>
-
-
-                <p
+                <div
                     style="
-                        margin-top:10px;
-                        color:#667085;
+                        grid-column:1/-1;
+                        background:white;
+                        border:1px solid #e1e6ee;
+                        border-radius:15px;
+                        padding:35px;
+                        text-align:center;
                     "
                 >
-                    Make sure links.csv is in the
-                    same folder as index.html.
-                </p>
 
+                    <h3>⚠️ Unable to load links.csv</h3>
 
-                <p
-                    style="
-                        margin-top:8px;
-                        color:#667085;
-                        font-size:13px;
-                    "
-                >
-                    If you opened index.html directly,
-                    use a local web server.
-                </p>
+                    <p
+                        style="
+                            margin-top:10px;
+                            color:#667085;
+                        "
+                    >
+                        Make sure links.csv is in the same
+                        folder as index.html.
+                    </p>
 
-            </div>
+                    <p
+                        style="
+                            margin-top:8px;
+                            color:#667085;
+                            font-size:13px;
+                        "
+                    >
+                        Use a local web server when testing
+                        the website.
+                    </p>
 
-        `;
+                </div>
+
+            `;
+
+        }
 
     }
 
@@ -177,6 +113,10 @@ function initialize() {
 
     createSubjectOptions();
 
+    updateSubjectButton();
+
+    updateActiveFilters();
+
     renderCards();
 
 }
@@ -191,26 +131,17 @@ function parseCSV(text) {
     const rows = [];
 
     let row = [];
-
     let cell = "";
-
     let insideQuotes = false;
 
 
-    for (
-        let i = 0;
-        i < text.length;
-        i++
-    ) {
+    for (let i = 0; i < text.length; i++) {
 
-        const char =
-            text[i];
-
-        const next =
-            text[i + 1];
+        const char = text[i];
+        const next = text[i + 1];
 
 
-        /* Quoted comma */
+        /* Escaped quote */
 
         if (
             char === '"' &&
@@ -227,17 +158,14 @@ function parseCSV(text) {
 
         /* Open / close quote */
 
-        else if (
-            char === '"'
-        ) {
+        else if (char === '"') {
 
-            insideQuotes =
-                !insideQuotes;
+            insideQuotes = !insideQuotes;
 
         }
 
 
-        /* New column */
+        /* Column separator */
 
         else if (
             char === "," &&
@@ -251,13 +179,10 @@ function parseCSV(text) {
         }
 
 
-        /* New row */
+        /* Row separator */
 
         else if (
-            (
-                char === "\n" ||
-                char === "\r"
-            ) &&
+            (char === "\n" || char === "\r") &&
             !insideQuotes
         ) {
 
@@ -270,13 +195,20 @@ function parseCSV(text) {
 
             }
 
-
             row.push(cell);
 
-            rows.push(row);
+            if (
+                row.some(
+                    value =>
+                        value.trim() !== ""
+                )
+            ) {
+
+                rows.push(row);
+
+            }
 
             row = [];
-
             cell = "";
 
         }
@@ -291,22 +223,93 @@ function parseCSV(text) {
     }
 
 
-    /* Last row */
+    /* Final row */
 
     if (
-        cell.length ||
-        row.length
+        cell.length > 0 ||
+        row.length > 0
     ) {
 
         row.push(cell);
 
-        rows.push(row);
+        if (
+            row.some(
+                value =>
+                    value.trim() !== ""
+            )
+        ) {
+
+            rows.push(row);
+
+        }
 
     }
 
 
+    if (rows.length < 2) {
+
+        console.warn("CSV contains no data.");
+
+        return [];
+
+    }
+
+
+    /* =====================================
+       HEADERS
+    ===================================== */
+
+    const headers = rows[0].map(header => {
+
+        return header
+            .replace(/^\uFEFF/, "")
+            .trim()
+            .toLowerCase();
+
+    });
+
+
+    console.log("CSV headers:", headers);
+
+
+    /* =====================================
+       DATA
+    ===================================== */
+
+    const data = rows
+        .slice(1)
+        .map(row => {
+
+            const item = {};
+
+            headers.forEach(
+                (header, index) => {
+
+                    item[header] =
+                        (row[index] || "").trim();
+
+                }
+            );
+
+            return item;
+
+        });
+
+
+    return data;
+
+}
+
+
+/* =========================================
+   SPLIT SUBJECTS
+========================================= */
+
+function splitSubjects(value) {
+
     if (
-        rows.length < 2
+        value === undefined ||
+        value === null
     ) {
 
         return [];
@@ -314,48 +317,10 @@ function parseCSV(text) {
     }
 
 
-    /* Headers */
-
-    const headers =
-        rows[0].map(
-            header =>
-                header
-                    .trim()
-                    .toLowerCase()
-        );
-
-
-    /* Convert CSV rows */
-
-    return rows
-        .slice(1)
-        .filter(row =>
-            row.some(
-                value =>
-                    value.trim() !== ""
-            )
-        )
-        .map(row => {
-
-            const item = {};
-
-
-            headers.forEach(
-                (header, index) => {
-
-                    item[header] =
-                        (
-                            row[index] ||
-                            ""
-                        ).trim();
-
-                }
-            );
-
-
-            return item;
-
-        });
+    return String(value)
+        .split(",")
+        .map(subject => subject.trim())
+        .filter(subject => subject.length > 0);
 
 }
 
@@ -366,8 +331,7 @@ function parseCSV(text) {
 
 function getSubjects() {
 
-    const subjectSet =
-        new Set();
+    const subjectSet = new Set();
 
 
     links.forEach(link => {
@@ -378,44 +342,19 @@ function getSubjects() {
             );
 
 
-        subjects.forEach(
-            subject =>
-                subjectSet.add(subject)
-        );
+        subjects.forEach(subject => {
+
+            subjectSet.add(subject);
+
+        });
 
     });
 
 
-    return [
-        ...subjectSet
-    ].sort(
+    return Array.from(subjectSet).sort(
         (a, b) =>
             a.localeCompare(b)
     );
-
-}
-
-
-/* =========================================
-   SPLIT MULTIPLE SUBJECTS
-========================================= */
-
-function splitSubjects(value) {
-
-    if (!value) {
-
-        return [];
-
-    }
-
-
-    return value
-        .split(",")
-        .map(
-            subject =>
-                subject.trim()
-        )
-        .filter(Boolean);
 
 }
 
@@ -426,12 +365,20 @@ function splitSubjects(value) {
 
 function updateStatistics() {
 
-    totalCount.textContent =
-        links.length;
+    if (totalCount) {
+
+        totalCount.textContent =
+            links.length;
+
+    }
 
 
-    subjectCount.textContent =
-        getSubjects().length;
+    if (subjectCount) {
+
+        subjectCount.textContent =
+            getSubjects().length;
+
+    }
 
 }
 
@@ -452,33 +399,23 @@ function createSubjectOptions() {
     subjects.forEach(subject => {
 
         const label =
-            document.createElement(
-                "label"
-            );
-
+            document.createElement("label");
 
         label.className =
             "subject-option";
 
 
         const checkbox =
-            document.createElement(
-                "input"
-            );
-
+            document.createElement("input");
 
         checkbox.type =
             "checkbox";
 
-
         checkbox.value =
             subject;
 
-
         checkbox.checked =
-            selectedSubjects.has(
-                subject
-            );
+            selectedSubjects.has(subject);
 
 
         checkbox.addEventListener(
@@ -511,10 +448,7 @@ function createSubjectOptions() {
 
 
         const text =
-            document.createElement(
-                "span"
-            );
-
+            document.createElement("span");
 
         text.textContent =
             subject;
@@ -523,7 +457,6 @@ function createSubjectOptions() {
         label.appendChild(
             checkbox
         );
-
 
         label.appendChild(
             text
@@ -540,10 +473,15 @@ function createSubjectOptions() {
 
 
 /* =========================================
-   SUBJECT BUTTON TEXT
+   SUBJECT BUTTON
 ========================================= */
 
 function updateSubjectButton() {
+
+    if (!subjectButtonText) {
+        return;
+    }
+
 
     const count =
         selectedSubjects.size;
@@ -556,14 +494,12 @@ function updateSubjectButton() {
 
     }
 
-
     else if (count === 1) {
 
         subjectButtonText.textContent =
             "1 Subject";
 
     }
-
 
     else {
 
@@ -579,69 +515,77 @@ function updateSubjectButton() {
    SUBJECT SEARCH
 ========================================= */
 
-subjectSearch.addEventListener(
-    "input",
-    function () {
+if (subjectSearch) {
 
-        const query =
-            this.value
-                .trim()
-                .toLowerCase();
+    subjectSearch.addEventListener(
+        "input",
+        function () {
 
-
-        document
-            .querySelectorAll(
-                ".subject-option"
-            )
-            .forEach(option => {
-
-                const text =
-                    option.textContent
-                        .toLowerCase();
+            const query =
+                this.value
+                    .trim()
+                    .toLowerCase();
 
 
-                option.style.display =
-                    text.includes(query)
-                        ? "flex"
-                        : "none";
+            document
+                .querySelectorAll(
+                    ".subject-option"
+                )
+                .forEach(option => {
 
-            });
-
-    }
-);
-
-
-/* =========================================
-   OPEN / CLOSE SUBJECT MENU
-========================================= */
-
-subjectButton.addEventListener(
-    "click",
-    function (event) {
-
-        event.stopPropagation();
-
-        subjectMenu.classList.toggle(
-            "hidden"
-        );
+                    const text =
+                        option.textContent
+                            .toLowerCase();
 
 
-        if (
-            !subjectMenu.classList.contains(
-                "hidden"
-            )
-        ) {
+                    option.style.display =
+                        text.includes(query)
+                            ? "flex"
+                            : "none";
 
-            subjectSearch.focus();
+                });
 
         }
+    );
 
-    }
-);
+}
 
 
 /* =========================================
-   CLICK OUTSIDE
+   OPEN SUBJECT MENU
+========================================= */
+
+if (subjectButton) {
+
+    subjectButton.addEventListener(
+        "click",
+        function (event) {
+
+            event.stopPropagation();
+
+            subjectMenu.classList.toggle(
+                "hidden"
+            );
+
+
+            if (
+                !subjectMenu.classList.contains(
+                    "hidden"
+                )
+            ) {
+
+                subjectSearch.focus();
+
+            }
+
+        }
+    );
+
+}
+
+
+/* =========================================
+   CLOSE SUBJECT MENU
 ========================================= */
 
 document.addEventListener(
@@ -668,38 +612,51 @@ document.addEventListener(
    CLEAR SUBJECTS
 ========================================= */
 
-clearSubjects.addEventListener(
-    "click",
-    function () {
+if (clearSubjects) {
 
-        selectedSubjects.clear();
+    clearSubjects.addEventListener(
+        "click",
+        function () {
 
-
-        document
-            .querySelectorAll(
-                ".subject-option input"
-            )
-            .forEach(
-                checkbox =>
-                    checkbox.checked = false
-            );
+            selectedSubjects.clear();
 
 
-        updateSubjectButton();
+            document
+                .querySelectorAll(
+                    ".subject-option input"
+                )
+                .forEach(
+                    checkbox => {
 
-        updateActiveFilters();
+                        checkbox.checked =
+                            false;
 
-        renderCards();
+                    }
+                );
 
-    }
-);
+
+            updateSubjectButton();
+
+            updateActiveFilters();
+
+            renderCards();
+
+        }
+    );
+
+}
 
 
 /* =========================================
-   ACTIVE FILTER DISPLAY
+   ACTIVE FILTERS
 ========================================= */
 
 function updateActiveFilters() {
+
+    if (!activeFilters) {
+        return;
+    }
+
 
     activeFilters.innerHTML = "";
 
@@ -708,14 +665,10 @@ function updateActiveFilters() {
         subject => {
 
             const filter =
-                document.createElement(
-                    "span"
-                );
-
+                document.createElement("span");
 
             filter.className =
                 "active-filter";
-
 
             filter.textContent =
                 `✓ ${subject}`;
@@ -746,9 +699,8 @@ function getFilteredLinks() {
     let filtered =
         links.filter(link => {
 
-            /* =========================
-               SEARCH
-            ========================= */
+
+            /* SEARCH */
 
             const searchableText = `
 
@@ -772,9 +724,7 @@ function getFilteredLinks() {
                 );
 
 
-            /* =========================
-               SUBJECT
-            ========================= */
+            /* SUBJECT */
 
             const linkSubjects =
                 splitSubjects(
@@ -783,9 +733,7 @@ function getFilteredLinks() {
 
 
             /*
-                A website is shown if
-                it matches ANY selected
-                subject.
+                Match ANY selected subject.
             */
 
             const matchesSubjects =
@@ -814,9 +762,7 @@ function getFilteredLinks() {
         sortSelect.value;
 
 
-    if (
-        sort === "name"
-    ) {
+    if (sort === "name") {
 
         filtered.sort(
             (a, b) =>
@@ -829,9 +775,7 @@ function getFilteredLinks() {
     }
 
 
-    else if (
-        sort === "nameDesc"
-    ) {
+    else if (sort === "nameDesc") {
 
         filtered.sort(
             (a, b) =>
@@ -844,9 +788,7 @@ function getFilteredLinks() {
     }
 
 
-    else if (
-        sort === "subject"
-    ) {
+    else if (sort === "subject") {
 
         filtered.sort(
             (a, b) => {
@@ -869,9 +811,7 @@ function getFilteredLinks() {
                     );
 
 
-                if (
-                    result !== 0
-                ) {
+                if (result !== 0) {
 
                     return result;
 
@@ -916,9 +856,7 @@ function renderCards() {
         }`;
 
 
-    if (
-        filtered.length === 0
-    ) {
+    if (filtered.length === 0) {
 
         emptyState.classList.remove(
             "hidden"
@@ -934,15 +872,13 @@ function renderCards() {
     );
 
 
-    filtered.forEach(
-        link => {
+    filtered.forEach(link => {
 
-            cardGrid.appendChild(
-                createCard(link)
-            );
+        cardGrid.appendChild(
+            createCard(link)
+        );
 
-        }
-    );
+    });
 
 }
 
@@ -954,10 +890,7 @@ function renderCards() {
 function createCard(link) {
 
     const card =
-        document.createElement(
-            "article"
-        );
-
+        document.createElement("article");
 
     card.className =
         "card";
@@ -968,32 +901,23 @@ function createCard(link) {
     ===================================== */
 
     const imageContainer =
-        document.createElement(
-            "div"
-        );
-
+        document.createElement("div");
 
     imageContainer.className =
         "card-image";
 
 
-    if (
-        link.screenshot
-    ) {
+    if (link.screenshot) {
 
         const image =
-            document.createElement(
-                "img"
-            );
+            document.createElement("img");
 
 
         image.src =
             link.screenshot;
 
-
         image.alt =
             `${link.name} screenshot`;
-
 
         image.loading =
             "lazy";
@@ -1007,14 +931,10 @@ function createCard(link) {
 
 
                 const placeholder =
-                    document.createElement(
-                        "div"
-                    );
-
+                    document.createElement("div");
 
                 placeholder.className =
                     "image-placeholder";
-
 
                 placeholder.textContent =
                     "🌐";
@@ -1032,7 +952,6 @@ function createCard(link) {
         );
 
     }
-
 
     else {
 
@@ -1052,10 +971,7 @@ function createCard(link) {
     ===================================== */
 
     const badgeContainer =
-        document.createElement(
-            "div"
-        );
-
+        document.createElement("div");
 
     badgeContainer.className =
         "subject-badges";
@@ -1067,29 +983,23 @@ function createCard(link) {
         );
 
 
-    subjects.forEach(
-        subject => {
+    subjects.forEach(subject => {
 
-            const badge =
-                document.createElement(
-                    "span"
-                );
+        const badge =
+            document.createElement("span");
 
+        badge.className =
+            "subject-badge";
 
-            badge.className =
-                "subject-badge";
-
-
-            badge.textContent =
-                subject;
+        badge.textContent =
+            subject;
 
 
-            badgeContainer.appendChild(
-                badge
-            );
+        badgeContainer.appendChild(
+            badge
+        );
 
-        }
-    );
+    });
 
 
     imageContainer.appendChild(
@@ -1098,14 +1008,11 @@ function createCard(link) {
 
 
     /* =====================================
-       BODY
+       CARD BODY
     ===================================== */
 
     const body =
-        document.createElement(
-            "div"
-        );
-
+        document.createElement("div");
 
     body.className =
         "card-body";
@@ -1114,49 +1021,36 @@ function createCard(link) {
     /* TITLE */
 
     const titleRow =
-        document.createElement(
-            "div"
-        );
-
+        document.createElement("div");
 
     titleRow.className =
         "card-title";
 
 
     const title =
-        document.createElement(
-            "h3"
-        );
-
+        document.createElement("h3");
 
     title.textContent =
         link.name ||
         "Untitled Website";
 
 
-    /* OPEN */
+    /* OPEN LINK */
 
     const openLink =
-        document.createElement(
-            "a"
-        );
-
+        document.createElement("a");
 
     openLink.className =
         "open-link";
 
-
     openLink.href =
         link.url || "#";
-
 
     openLink.target =
         "_blank";
 
-
     openLink.rel =
         "noopener noreferrer";
-
 
     openLink.textContent =
         "Open ↗";
@@ -1165,7 +1059,6 @@ function createCard(link) {
     titleRow.appendChild(
         title
     );
-
 
     titleRow.appendChild(
         openLink
@@ -1180,14 +1073,10 @@ function createCard(link) {
     /* DESCRIPTION */
 
     const description =
-        document.createElement(
-            "p"
-        );
-
+        document.createElement("p");
 
     description.className =
         "description";
-
 
     description.textContent =
         link.description ||
@@ -1202,37 +1091,25 @@ function createCard(link) {
     /* TAGS */
 
     const tagsContainer =
-        document.createElement(
-            "div"
-        );
-
+        document.createElement("div");
 
     tagsContainer.className =
         "tags";
 
 
-    if (
-        link.tags
-    ) {
+    if (link.tags) {
 
         link.tags
             .split(",")
-            .map(
-                tag =>
-                    tag.trim()
-            )
+            .map(tag => tag.trim())
             .filter(Boolean)
             .forEach(tag => {
 
                 const tagElement =
-                    document.createElement(
-                        "span"
-                    );
-
+                    document.createElement("span");
 
                 tagElement.className =
                     "tag";
-
 
                 tagElement.textContent =
                     `#${tag}`;
@@ -1258,7 +1135,6 @@ function createCard(link) {
         imageContainer
     );
 
-
     card.appendChild(
         body
     );
@@ -1273,16 +1149,24 @@ function createCard(link) {
    EVENTS
 ========================================= */
 
-searchInput.addEventListener(
-    "input",
-    renderCards
-);
+if (searchInput) {
+
+    searchInput.addEventListener(
+        "input",
+        renderCards
+    );
+
+}
 
 
-sortSelect.addEventListener(
-    "change",
-    renderCards
-);
+if (sortSelect) {
+
+    sortSelect.addEventListener(
+        "change",
+        renderCards
+    );
+
+}
 
 
 /* =========================================
