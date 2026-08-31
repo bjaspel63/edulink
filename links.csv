@@ -1,7 +1,7 @@
 id,name,url,applicable_subjects,description,tags,screenshot
-1,Scratch,https://scratch.mit.edu,ICT,"Create games, stories, and animations.","coding,games,programming",
-2,Canva,https://www.canva.com,ICT,"Create posters, presentations, graphics, and classroom materials.","design,graphics,presentations",
-3,Tinkercad,https://www.tinkercad.com,ICT,"Create 3D models and explore electronics and circuits.","3d,design,electronics",
-4,Code.org,https://code.org,ICT,"Interactive computer science and programming activities.","coding,cs,education",
-5,BBC micro:bit,https://microbit.org,ICT,"Programming and physical computing projects for learners.","microbit,hardware,programming",
+1,Scratch,https://scratch.mit.edu,"ICT","Create games, stories, and animations.","coding,games,programming",
+2,Canva,https://www.canva.com,"ICT","Create posters, presentations, graphics, and classroom materials.","design,graphics,presentations",
+3,Tinkercad,https://www.tinkercad.com,"ICT","Create 3D models and explore electronics and circuits.","3d,design,electronics",
+4,Code.org,https://code.org,"ICT","Interactive computer science and programming activities.","coding,cs,education",
+5,BBC micro:bit,https://microbit.org,"ICT","Programming and physical computing projects for learners.","microbit,hardware,programming",
 6,Class Playground,https://classplayground.com/,"Art, English, Math","Blending Real-World Materials with Digital Learning","art,literacy,reading,math",
