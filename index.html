@@ -4,214 +4,254 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>EduLink | Website Resource Library</title>
+    <title>EduLink | Resource Library</title>
 
     <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
 
-    <!-- =========================
-         HEADER
-    ========================== -->
-    <header class="topbar">
+<header class="topbar">
 
-        <div class="brand">
+    <div class="brand">
 
-            <div class="brand-icon">
-                🔗
-            </div>
-
-            <div>
-                <h1>EduLink</h1>
-                <p>Website Resource Library</p>
-            </div>
-
+        <div class="brand-icon">
+            🔗
         </div>
 
-    </header>
+        <div>
+            <h1>EduLink</h1>
+            <p>Website Resource Library</p>
+        </div>
+
+    </div>
+
+</header>
 
 
-    <!-- =========================
-         MAIN
-    ========================== -->
-    <main class="container">
+<main class="container">
 
-        <!-- HERO -->
-        <section class="hero">
+    <!-- HERO -->
+    <section class="hero">
 
-            <div class="hero-content">
+        <div class="hero-content">
 
-                <span class="hero-label">
-                    📚 RESOURCE LIBRARY
-                </span>
-
-                <h2>
-                    All your useful websites
-                    <span>in one place.</span>
-                </h2>
-
-                <p>
-                    Browse, search, filter, and organize your
-                    favorite educational and professional websites.
-                </p>
-
-            </div>
-
-
-            <div class="stats">
-
-                <div class="stat-box">
-
-                    <strong id="totalCount">
-                        0
-                    </strong>
-
-                    <span>
-                        Websites
-                    </span>
-
-                </div>
-
-
-                <div class="stat-box">
-
-                    <strong id="subjectCount">
-                        0
-                    </strong>
-
-                    <span>
-                        Subjects
-                    </span>
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- =========================
-             SEARCH / FILTER
-        ========================== -->
-        <section class="toolbar">
-
-            <div class="search-box">
-
-                <span>
-                    🔎
-                </span>
-
-                <input
-                    type="search"
-                    id="searchInput"
-                    placeholder="Search websites, descriptions, or tags..."
-                >
-
-            </div>
-
-
-            <select id="subjectFilter">
-
-                <option value="">
-                    All Subjects
-                </option>
-
-            </select>
-
-
-            <select id="sortSelect">
-
-                <option value="name">
-                    Name A–Z
-                </option>
-
-                <option value="nameDesc">
-                    Name Z–A
-                </option>
-
-                <option value="subject">
-                    Subject
-                </option>
-
-            </select>
-
-        </section>
-
-
-        <!-- =========================
-             SUBJECT BUTTONS
-        ========================== -->
-        <section
-            class="subject-pills"
-            id="subjectPills"
-        ></section>
-
-
-        <!-- =========================
-             RESOURCE COUNT
-        ========================== -->
-        <div class="results-info">
-
-            <span id="resultsCount">
-                0 websites
+            <span class="hero-label">
+                📚 RESOURCE LIBRARY
             </span>
 
+            <h2>
+                All your useful websites
+                <span>in one place.</span>
+            </h2>
+
+            <p>
+                Find educational websites quickly by subject,
+                topic, or keyword.
+            </p>
+
         </div>
 
 
-        <!-- =========================
-             WEBSITE CARDS
-        ========================== -->
-        <section
-            class="card-grid"
-            id="cardGrid"
-        ></section>
+        <div class="stats">
 
+            <div class="stat-box">
 
-        <!-- =========================
-             EMPTY STATE
-        ========================== -->
-        <section
-            class="empty-state hidden"
-            id="emptyState"
-        >
+                <strong id="totalCount">
+                    0
+                </strong>
 
-            <div class="empty-icon">
-                🔍
+                <span>
+                    Websites
+                </span>
+
             </div>
 
-            <h3>
-                No websites found
-            </h3>
 
-            <p>
-                Try another search or subject.
-            </p>
+            <div class="stat-box">
 
-        </section>
+                <strong id="subjectCount">
+                    0
+                </strong>
 
-    </main>
+                <span>
+                    Subjects
+                </span>
+
+            </div>
+
+        </div>
+
+    </section>
 
 
-    <!-- =========================
-         FOOTER
-    ========================== -->
-    <footer>
+    <!-- TOOLBAR -->
+    <section class="toolbar">
+
+        <!-- SEARCH -->
+
+        <div class="search-box">
+
+            <span>🔎</span>
+
+            <input
+                type="search"
+                id="searchInput"
+                placeholder="Search websites, descriptions, or tags..."
+            >
+
+        </div>
+
+
+        <!-- SUBJECT MULTI SELECT -->
+
+        <div class="subject-dropdown">
+
+            <button
+                class="subject-button"
+                id="subjectButton"
+                type="button"
+            >
+
+                📚
+
+                <span id="subjectButtonText">
+                    Subjects
+                </span>
+
+                <span class="arrow">
+                    ▾
+                </span>
+
+            </button>
+
+
+            <div
+                class="subject-menu hidden"
+                id="subjectMenu"
+            >
+
+                <div class="subject-search">
+
+                    🔎
+
+                    <input
+                        type="search"
+                        id="subjectSearch"
+                        placeholder="Search subjects..."
+                    >
+
+                </div>
+
+
+                <div
+                    class="subject-options"
+                    id="subjectOptions"
+                ></div>
+
+
+                <div class="subject-menu-footer">
+
+                    <button
+                        id="clearSubjects"
+                        type="button"
+                    >
+                        Clear
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- SORT -->
+
+        <select id="sortSelect">
+
+            <option value="name">
+                Sort: Name A–Z
+            </option>
+
+            <option value="nameDesc">
+                Sort: Name Z–A
+            </option>
+
+            <option value="subject">
+                Sort: Subject
+            </option>
+
+        </select>
+
+    </section>
+
+
+    <!-- ACTIVE FILTERS -->
+
+    <div
+        class="active-filters"
+        id="activeFilters"
+    ></div>
+
+
+    <!-- RESULTS -->
+
+    <div class="results-info">
+
+        <span id="resultsCount">
+            0 websites
+        </span>
+
+    </div>
+
+
+    <!-- CARDS -->
+
+    <section
+        class="card-grid"
+        id="cardGrid"
+    ></section>
+
+
+    <!-- EMPTY -->
+
+    <section
+        class="empty-state hidden"
+        id="emptyState"
+    >
+
+        <div class="empty-icon">
+            🔍
+        </div>
+
+        <h3>
+            No websites found
+        </h3>
 
         <p>
-            LinkVault · Personal Project by Jaspel Bosales
+            Try changing your search or subject filters.
         </p>
 
-        <p>
-            Your website library is managed through
-            <strong>links.csv</strong>
-        </p>
+    </section>
 
-    </footer>
+</main>
 
 
-    <script src="script.js"></script>
+<footer>
+
+    <p>
+        EduLink · Powered by CSV
+    </p>
+
+    <p>
+        Edit <strong>links.csv</strong> to manage your resources.
+    </p>
+
+</footer>
+
+
+<script src="script.js"></script>
 
 </body>
 </html>
